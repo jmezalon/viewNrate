@@ -11,7 +11,7 @@ class Post {
                    p.user_id AS "userId",
                    p.created_at AS "createdAt",
                    p.updated_at AS "updatedAt"
-            FROM posts as p
+            FROM posts AS p
                 JOIN users AS u ON u.id = p.user_id
             ORDER BY p.created_at DESC
         `
@@ -26,9 +26,10 @@ class Post {
                      p.caption,
                      p.img_url AS "imgUrl",
                      p.user_id AS "userId",
+                     u.email,
                      p.created_at AS "createdAt",
                      p.updated_at AS "updatedAt"
-              FROM posts as p
+              FROM posts AS p
                   JOIN users AS u ON u.id = p.user_id
               WHERE p.id = $1
           `,
@@ -62,7 +63,7 @@ class Post {
             RETURNING id,
                       caption,
                       img_url AS "imgUrl",
-                      user_id AS "userID",
+                      user_id AS "userId",
                       created_at AS "createdAt",
                       updated_at AS "updatedAt"
         `,
@@ -72,7 +73,32 @@ class Post {
     return results.rows[0];
   }
 
-  static async editPost({ postId, postUpdate }) {}
+  static async editPost({ postId, postUpdate }) {
+    const requiredField = ["caption"];
+    requiredField.forEach((field) => {
+      if (!postUpdate.hasOwnProperty(field)) {
+        throw new BadRequestError(`Required field - ${field} - is missing!}`);
+      }
+    });
+
+    const results = await db.query(
+      `
+            UPDATE posts
+            SET caption      = $1,
+                updated_at   = NOW()
+            WHERE id         = $2
+            RETURNING id,
+                      caption,
+                      img_url AS "imgUrl",
+                      user_id AS "userId",
+                      created_at AS "createdAt",
+                      updated_at AS "updatedAt"
+                      
+        `,
+      [postUpdate.caption, postId]
+    );
+    return results.rows[0];
+  }
 }
 
 module.exports = Post;
