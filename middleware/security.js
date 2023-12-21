@@ -5,7 +5,7 @@ const { UnauthorizedError } = require("../utils/errors");
 
 const jwtFrom = ({ headers }) => {
   if (headers?.authorization) {
-    const [] = headers.authorization.spilt(" ");
+    const [scheme, token] = headers.authorization.split(" ");
     if (scheme.trim() === "Bearer") {
       return token;
     }
@@ -39,7 +39,7 @@ const requireAuthenticatedUser = (req, res, next) => {
   }
 };
 
-modules.export = {
+module.exports = {
   extraUserFromJwt,
   requireAuthenticatedUser,
 };
